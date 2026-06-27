@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mechanic Simulator — Sign in</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main style="max-width:380px;margin:12vh auto;">
+    <div class="brand" style="text-align:center;margin-bottom:18px;">🔧 Mechanic Simulator</div>
+    <div class="card">
+      <h2 id="loginTitle">Sign in</h2>
+      <p class="muted" id="loginHint">Enter your password.</p>
+      <label>Password
+        <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <button class="btn primary" id="loginBtn">Sign in</button>
+      <div id="loginErr" class="status unset"></div>
+    </div>
+  </main>
+  <script src="/login.js"></script>
+</body>
+</html>

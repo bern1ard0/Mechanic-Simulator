@@ -14,6 +14,7 @@
       <button class="tab" data-view="diagnose">Diagnose</button>
       <button class="tab" data-view="visual">Visual Studio</button>
       <button class="tab" data-view="settings">Settings</button>
+      <button class="tab" id="logoutBtn" title="Sign out">⎋ Sign out</button>
     </nav>
   </header>
 
@@ -109,7 +110,16 @@
         <label>Mileage <input id="f_mileage" name="mileage" placeholder="e.g. 84,000" /></label>
         <label>Color <input id="f_color" name="color" placeholder="Silver" /></label>
       </div>
-      <label>Photo <input id="f_photo" type="file" accept="image/*" /></label>
+      <div class="photo-section">
+        <div class="row between">
+          <span>Photos</span>
+          <label class="btn ghost small" style="cursor:pointer;">
+            + Add photos
+            <input id="f_photo" type="file" accept="image/*" multiple hidden />
+          </label>
+        </div>
+        <div id="galleryEdit" class="gallery"></div>
+      </div>
       <label>Notes <textarea id="f_notes" name="notes" rows="2" placeholder="anything you want to remember"></textarea></label>
       <div class="row between">
         <button type="button" class="btn ghost" id="cancelCarBtn">Cancel</button>
