@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Your private data — cars, VINs, photos, repair history. NEVER commit this.
+data/
+!data/.gitkeep
+
+# Your secrets — API keys. NEVER commit these.
+.env
+.env.local
+*.local
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*

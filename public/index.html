@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mechanic Simulator</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🔧 Mechanic Simulator <span class="muted">· personal garage</span></div>
+    <nav class="tabs">
+      <button class="tab active" data-view="garage">My Garage</button>
+      <button class="tab" data-view="diagnose">Diagnose</button>
+      <button class="tab" data-view="visual">Visual Studio</button>
+      <button class="tab" data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- GARAGE -->
+    <section id="view-garage" class="view active">
+      <div class="row between">
+        <div class="subtabs">
+          <button class="subtab active" data-bucket="owned">My Cars</button>
+          <button class="subtab" data-bucket="prospective">Looking to Buy</button>
+        </div>
+        <button class="btn primary" id="addCarBtn">+ Add a car</button>
+      </div>
+      <div id="garageList" class="garage-list"></div>
+    </section>
+
+    <!-- DIAGNOSE -->
+    <section id="view-diagnose" class="view">
+      <h2>Diagnose a problem</h2>
+      <p class="muted">Pick a car, describe what it's doing, and get the likely cause plus a video and manual to fix it.</p>
+      <div class="card">
+        <label>Car
+          <select id="diagCar"></select>
+        </label>
+        <label>What's the problem?
+          <textarea id="diagSymptom" rows="4" placeholder="e.g. Grinding noise from front right when I brake, worse at low speed"></textarea>
+        </label>
+        <button class="btn primary" id="diagBtn">Diagnose</button>
+      </div>
+      <div id="diagResult"></div>
+    </section>
+
+    <!-- VISUAL STUDIO -->
+    <section id="view-visual" class="view">
+      <h2>Visual Studio</h2>
+      <p class="muted">Realistic edits to a photo of your actual car — paint, wheels, tint, stance, real body parts. No fantasy builds.</p>
+      <div class="card">
+        <label>Car
+          <select id="visCar"></select>
+        </label>
+        <div id="visPresets" class="presets"></div>
+        <label>Anything else? (checked for realism)
+          <input id="visFree" type="text" placeholder="e.g. bronze wheels and a subtle front lip" />
+        </label>
+        <button class="btn primary" id="visBtn">Preview the edit</button>
+      </div>
+      <div id="visResult"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <h2>Settings</h2>
+      <p class="muted">Paste your keys here. They're stored only on your machine and never leave it except to call the service they belong to. You never need to touch a file.</p>
+      <div class="card">
+        <label>Anthropic (Claude) API key <span class="muted">— powers the AI diagnosis</span>
+          <input id="setAnthropic" type="password" placeholder="leave blank to keep current" autocomplete="off" />
+          <span class="status" id="statAnthropic"></span>
+        </label>
+        <label>YouTube API key <span class="muted">— optional, pins a specific repair video</span>
+          <input id="setYoutube" type="password" placeholder="leave blank to keep current" autocomplete="off" />
+          <span class="status" id="statYoutube"></span>
+        </label>
+        <label>Higgsfield API key <span class="muted">— optional, for car-photo edits</span>
+          <input id="setHiggsfield" type="password" placeholder="leave blank to keep current" autocomplete="off" />
+          <span class="status" id="statHiggsfield"></span>
+        </label>
+        <button class="btn primary" id="saveSettingsBtn">Save</button>
+        <span id="settingsSaved" class="saved-msg"></span>
+      </div>
+      <p class="tip">Tip: to clear a key, type a single space and Save.</p>
+    </section>
+  </main>
+
+  <!-- Add/Edit car dialog -->
+  <dialog id="carDialog">
+    <form id="carForm" method="dialog">
+      <h3 id="carDialogTitle">Add a car</h3>
+      <div class="grid2">
+        <label>Status
+          <select id="f_status" name="status">
+            <option value="owned">I own / oversee it</option>
+            <option value="prospective">Looking to buy</option>
+          </select>
+        </label>
+        <label>Owner
+          <input id="f_owner" name="owner" placeholder="Me, Wife, ..." value="Me" />
+        </label>
+        <label>Year <input id="f_year" name="year" placeholder="2019" /></label>
+        <label>Make <input id="f_make" name="make" placeholder="Toyota" /></label>
+        <label>Model <input id="f_model" name="model" placeholder="Camry" /></label>
+        <label>Trim <input id="f_trim" name="trim" placeholder="XSE" /></label>
+        <label>VIN <input id="f_vin" name="vin" placeholder="optional" /></label>
+        <label>Mileage <input id="f_mileage" name="mileage" placeholder="e.g. 84,000" /></label>
+        <label>Color <input id="f_color" name="color" placeholder="Silver" /></label>
+      </div>
+      <label>Photo <input id="f_photo" type="file" accept="image/*" /></label>
+      <label>Notes <textarea id="f_notes" name="notes" rows="2" placeholder="anything you want to remember"></textarea></label>
+      <div class="row between">
+        <button type="button" class="btn ghost" id="cancelCarBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveCarBtn">Save car</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>

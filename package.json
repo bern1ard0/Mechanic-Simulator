@@ -1,0 +1,14 @@
+{
+  "name": "mechanic-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal mechanic simulator: your garage, AI diagnostics, and realistic car visualizations. For personal use only.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
