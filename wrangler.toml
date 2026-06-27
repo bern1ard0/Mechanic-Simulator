@@ -1,0 +1,28 @@
+# Cloudflare Workers config.
+#
+# This runs the app on Cloudflare (free tier covers personal use), backed by:
+#   - D1  : Cloudflare's SQLite database (your cars, issues, settings)
+#   - R2  : Cloudflare's object storage (your car photos)
+#   - Assets: the web page itself (public/)
+#
+# Login is handled in FRONT of this by Cloudflare Access (set up in the
+# dashboard), so the app itself has no password code.
+name = "mechanic-simulator"
+main = "src/worker.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mechanic_db"
+# Replace at deploy time with the id from `wrangler d1 create mechanic_db`
+database_id = "local-dev-placeholder"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "mechanic-photos"

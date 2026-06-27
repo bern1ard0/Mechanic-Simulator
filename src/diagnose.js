@@ -1,15 +1,8 @@
-// Diagnostic engine.
+// Diagnostic engine (runs on Cloudflare Workers — uses global fetch).
 //
-// Flow: take the car + the symptom the user describes, and produce:
-//   - the most likely cause(s), ranked, with severity
-//   - 1-2 follow-up questions to narrow it down
-//   - the parts and tools a fix would need
-//   - a starting set of repair steps
-//   - a YouTube video and a manual to follow along with
-//
-// AI guidance (the "what's likely wrong" part) uses the Anthropic / Claude API
-// if a key is set. Without a key, the app still works — it just returns search
-// links instead of a reasoned diagnosis, and tells the user how to upgrade.
+// Produces: likely cause(s) ranked + severity, follow-up questions, parts,
+// tools, repair steps, plus a YouTube video and a manual. AI guidance uses the
+// Anthropic / Claude API when a key is set; otherwise it returns search links.
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
@@ -17,16 +10,13 @@ const DEFAULT_MODEL = 'claude-sonnet-4-6';
 function carLabel(v) {
   return [v?.year, v?.make, v?.model, v?.trim].filter(Boolean).join(' ').trim();
 }
-
 function ytSearchUrl(q) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
 }
-
 function manualSearchUrl(q) {
   return `https://www.google.com/search?q=${encodeURIComponent(q + ' repair manual')}`;
 }
 
-// Optionally resolve a specific top YouTube video (needs a YouTube Data API key).
 async function findVideo({ query, youtubeKey }) {
   if (!youtubeKey) {
     return { title: `Search YouTube for "${query}"`, url: ytSearchUrl(query), source: 'search' };
@@ -50,7 +40,6 @@ async function findVideo({ query, youtubeKey }) {
   }
 }
 
-// Pull the first JSON object out of a model's text response, defensively.
 function extractJson(text) {
   if (!text) return null;
   const start = text.indexOf('{');
@@ -112,20 +101,12 @@ export async function diagnose({ vehicle, symptom, settings = {} }) {
   const youtubeKey = settings.YOUTUBE_API_KEY;
   const model = settings.ANTHROPIC_MODEL;
 
-  // No AI key: graceful fallback to search links only.
   if (!anthropicKey) {
     const query = `${car} ${symptom}`.trim();
     const video = await findVideo({ query: `${query} fix how to`, youtubeKey });
     return {
-      aiUsed: false,
-      car,
-      symptom,
-      likelyCauses: [],
-      followUps: [],
-      parts: [],
-      tools: [],
-      steps: [],
-      safety: '',
+      aiUsed: false, car, symptom,
+      likelyCauses: [], followUps: [], parts: [], tools: [], steps: [], safety: '',
       video,
       manual: { title: `Find a manual for "${query}"`, url: manualSearchUrl(query) },
       note:
@@ -135,20 +116,13 @@ export async function diagnose({ vehicle, symptom, settings = {} }) {
   }
 
   const ai = await aiGuidance({
-    vehicle,
-    symptom,
-    mileage: vehicle?.mileage,
-    apiKey: anthropicKey,
-    model,
+    vehicle, symptom, mileage: vehicle?.mileage, apiKey: anthropicKey, model,
   });
-
   const videoQuery = ai.searchQuery || `${car} ${symptom} fix how to`;
   const video = await findVideo({ query: videoQuery, youtubeKey });
 
   return {
-    aiUsed: true,
-    car,
-    symptom,
+    aiUsed: true, car, symptom,
     likelyCauses: ai.likelyCauses || [],
     followUps: ai.followUps || [],
     parts: ai.parts || [],

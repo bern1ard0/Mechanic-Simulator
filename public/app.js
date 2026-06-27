@@ -4,7 +4,8 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const json = () => ({ 'content-type': 'application/json' });
 const api = async (url, opts) => {
   const res = await fetch(url, opts);
-  if (res.status === 401) { location.href = '/login.html'; throw new Error('Session expired'); }
+  // Cloudflare Access expired → reload so it re-prompts for login.
+  if (res.status === 401) { location.reload(); throw new Error('Session expired'); }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
@@ -33,11 +34,6 @@ $$('.tab[data-view]').forEach((t) =>
     if (t.dataset.view === 'visual') loadPresets();
   })
 );
-
-$('#logoutBtn').addEventListener('click', async () => {
-  await fetch('/api/logout', { method: 'POST' });
-  location.href = '/login.html';
-});
 
 $$('.subtab').forEach((t) =>
   t.addEventListener('click', () => {

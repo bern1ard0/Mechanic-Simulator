@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Cloudflare Workers local state & local secrets
+.wrangler/
+.dev.vars
+
 # Your private data — cars, VINs, photos, repair history. NEVER commit this.
 data/
 !data/.gitkeep

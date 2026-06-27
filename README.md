@@ -1,49 +1,70 @@
 # 🔧 Mechanic Simulator
 
 A **private, password-protected** car app — just for you, made to open from your
-phone. Three things in one place:
+phone. It runs entirely on **Cloudflare** (your own account), so it's ~free and
+lives under your domain.
 
 1. **My Garage** — every car you own or oversee (yours, your wife's, etc.), each
    with **multiple photos you can add and remove**, plus a **Looking to Buy** list
    for cars you're considering. You're the one car guy who manages it all; "owner"
-   is just a label so you can tell whose car is whose.
+   is just a label.
 2. **Diagnose** — describe a problem, pick the car, and get the likely cause, the
    parts and tools you'll need, and a YouTube video + manual to follow.
 3. **Visual Studio** — realistic edits to a photo of your *actual* car (paint, wheels,
    tint, stance, real body parts). It refuses fantasy/unrealistic requests on purpose.
 
-## Security & privacy
+## How it's built (all Cloudflare)
 
-- **The whole site is behind one password.** First time you open it, you set the
-  password; after that you sign in, and it remembers you on your phone.
-- Passwords are stored only as a salted hash, never in plain text.
-- Your cars, VINs, photos, and API keys live on your server's private disk and are
-  **never** committed to GitHub. The private repo covers only the code.
+| Piece | Cloudflare service |
+|------|---------------------|
+| The app | **Workers** (`src/worker.js`, via Hono) |
+| Cars / issues / settings | **D1** (SQLite database) |
+| Car photos | **R2** (object storage) |
+| The web page | **Workers static assets** (`public/`) |
+| Login / security | **Cloudflare Access** (in front — emails you a one-time code) |
+
+Login is handled by Cloudflare Access *before* a request reaches the app, so there's
+no password to manage in code and nothing private is ever exposed.
 
 ---
 
-## Putting it online (so you can use it from your phone)
+## Going live on Cloudflare (one-time setup)
 
-This app is built to be hosted on a URL — you don't run anything locally. The
-easiest path is **Render**, which deploys straight from this GitHub repo:
+You don't write code. These are dashboard clicks plus a couple of commands I'll run
+or hand you. Do them once and you're live at **garage.solemnarchitect.com**.
 
-1. Go to **render.com**, sign in with GitHub.
-2. **New → Blueprint**, pick this repo. Render reads `render.yaml` automatically.
-3. When asked, set **`AUTH_PASSWORD`** to the password you want for the site.
-4. Click **Apply**. In a couple of minutes you get a URL like
-   `https://mechanic-simulator.onrender.com`.
-5. Open that URL on your phone, sign in with your password. Done.
+### 1. Create the storage (Cloudflare dashboard)
+- **Workers & Pages → D1 → Create database**, name it **`mechanic_db`**. Copy its
+  **Database ID**.
+- **R2 → Create bucket**, name it **`mechanic-photos`**.
 
-The `render.yaml` includes a **persistent disk**, so your cars and photos survive
-restarts. (A persistent disk needs Render's paid instance, ~$7/month — that's the
-trade-off for a private app that never forgets your garage.)
+### 2. Drop in the Database ID
+In `wrangler.toml`, replace `database_id = "local-dev-placeholder"` with the ID you
+copied. (Tell me the ID and I'll commit this for you.)
 
-A `Dockerfile` is also included if you'd rather host on Fly.io, Railway, or a VPS.
+### 3. Create the tables
+In the dashboard: **D1 → mechanic_db → Console**, paste the contents of `schema.sql`,
+run it. (Or, from a computer: `npm run db:init`.)
 
-### Settings / API keys
+### 4. Deploy the app
+Easiest from a phone: **Workers & Pages → Create → Connect to Git**, pick this repo.
+Cloudflare reads `wrangler.toml`, builds, and deploys on every push.
+(Or, from a computer: `npm run deploy`.)
 
-Open the app → **Settings** → paste your key(s) → **Save**. Stored only on your
-server, never shown back, never pushed.
+### 5. Put it on your domain
+On the Worker → **Settings → Domains & Routes → Add custom domain** →
+`garage.solemnarchitect.com`. Cloudflare wires the DNS automatically since you own
+the domain.
+
+### 6. Lock it with Cloudflare Access (the login)
+**Zero Trust → Access → Applications → Add → Self-hosted**, set the domain to
+`garage.solemnarchitect.com`, and add a policy that allows **only your email**.
+Now anyone visiting must prove they're you (Cloudflare emails a one-time code) before
+the app even loads.
+
+### 7. Add your API keys
+Open the app → **Settings** → paste your key(s) → **Save**. Stored in your own D1,
+never shown back, never pushed to GitHub.
 
 | Key | What it unlocks | Required? |
 |-----|-----------------|-----------|
@@ -51,27 +72,27 @@ server, never shown back, never pushed.
 | YouTube | Pins a specific repair video instead of a search link | Optional |
 | Higgsfield | Realistic car-photo edits | Optional |
 
-**Never paste a key into a chat or commit it to the repo.** The Settings page is
-the only place it should go.
+**Never paste a key into a chat or commit it to the repo.** The Settings page is the
+only place it should go.
 
 ---
 
-## Running it on a computer (optional, for testing)
+## Developing locally (optional)
 
 ```bash
 npm install
-npm start          # then open http://localhost:3000
+npm run db:init:local     # create local tables
+npm run dev               # http://localhost:8787 (D1 + R2 are simulated)
 ```
 
 ---
 
 ## Status
 
-- ✅ Password-protected site (set-on-first-visit, signed session cookie)
+- ✅ All-Cloudflare: Workers + D1 + R2 + static assets
 - ✅ Garage: owned cars + owner labels + "Looking to Buy"
-- ✅ Multiple photos per car (add / remove)
-- ✅ Settings / key management (keys never returned to the browser)
-- ✅ Diagnose (AI guidance when a Claude key is set; search links otherwise)
+- ✅ Multiple photos per car (add / remove), stored in R2
+- ✅ Diagnose (AI guidance with a Claude key; search links otherwise)
 - ✅ Visual Studio realism guardrail + prompt builder
-- ✅ Deploy config (Render blueprint + Dockerfile) with persistent storage
+- ✅ Login via Cloudflare Access (no homemade password)
 - ⏳ Visual Studio image generation (wiring the Higgsfield call) — next milestone
